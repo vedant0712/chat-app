@@ -50,25 +50,30 @@ const registration = () => {
         await uploadBytesResumable(storageRef, blob);
         // Get the download URL
         downloadURL = await getDownloadURL(storageRef);
-        router.replace("/chats");
       }
+
       // Get a reference to Firestore
       const userRef = doc(db, "users", user.id); // Use the user's ID as the document ID
       // Set the user data in Firestore
-      await setDoc(userRef, {
+      const updatedUser = {
         ...user,
         name: name,
         profileImg: downloadURL, // This will be null if no image was uploaded
         friendList: [],
         friendRequests: [],
-      });
-      setUser({
-        ...user,
-        name: name,
-        profileImg: downloadURL,
-        friendList: [],
-        friendRequests: [],
-      });
+        conversations: [],
+      };
+
+      await setDoc(userRef, updatedUser);
+
+      // Log the updated user data
+      console.log("Updated user data:", updatedUser);
+
+      // Set the user data in the AuthStore
+      setUser(updatedUser);
+
+      // Navigate to the chats screen
+      router.replace("/chats");
     } catch (e) {
       if (e instanceof Error) {
         setError(e);

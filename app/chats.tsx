@@ -1,34 +1,58 @@
-import { View, Text, Modal, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useAuthStore } from "../context/AuthStore";
 import AddFriendModal from "../components/AddFriendModal";
 import FriendRequestsModal from "../components/FriendRequestsModal";
+import { doc, getDoc } from "firebase/firestore";
+import {
+  useConversationStore,
+  Conversation,
+} from "../context/ConversationStore";
+import { db } from "../config/firebase";
 
 const Chats = () => {
   const { user, setUser, error, setError } = useAuthStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [requestsModalVisible, setRequestsModalVisible] = useState(false);
-  const [email, setEmail] = useState('');
+  const { conversations, setConversations } = useConversationStore();
 
   useEffect(() => {
-    if (!user) {
+    if (user) {
+      fetchConversationsData();
+    } else {
       router.replace("/");
     }
   }, [user]);
+
+  const fetchConversationsData = async () => {
+    if (user) {
+      // Fetch conversations based on user's conversation IDs
+      const conversationPromises = user.conversations.map(async (conversationId: string) => {
+        const conversationRef = doc(db, "conversations", conversationId);
+        const conversationDoc = await getDoc(conversationRef);
+        return { id: conversationDoc.id, ...conversationDoc.data() } as Conversation;
+      });
+
+      const conversations = await Promise.all(conversationPromises);
+      setConversations(conversations);
+    }
+  };
 
   const logout = async () => {
     try {
       await GoogleSignin.revokeAccess();
       await GoogleSignin.signOut();
       setUser(null);
+      router.replace("/"); // Redirect to login page after logout
     } catch (e) {
       if (e instanceof Error) {
         setError(e);
       }
     }
   };
+console.log(user,"user");
   return (
     user && (
       <View style={styles.container}>
@@ -36,19 +60,40 @@ const Chats = () => {
           <TouchableOpacity style={styles.button} onPress={logout}>
             <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => setModalVisible(true)}
+          >
             <Text style={styles.buttonText}>Add Friends</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => setRequestsModalVisible(true)}>
-            <Text style={styles.buttonText}>Friend Requests ({user.friendRequests.length})</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => setRequestsModalVisible(true)}
+          >
+            <Text style={styles.buttonText}>
+              Friend Requests ({user.friendRequests.length})
+            </Text>
           </TouchableOpacity>
         </View>
         <Text style={styles.greeting}>Hello {user.name}!</Text>
-        <AddFriendModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+        <AddFriendModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+        />
         <FriendRequestsModal
           visible={requestsModalVisible}
           onClose={() => setRequestsModalVisible(false)}
           friendRequests={user.friendRequests}
+        />
+        <FlatList
+          data={conversations}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.conversationItem}>
+              <Text style={styles.conversationText}>Conversation with {item.participants.filter(id => id !== user.id).join(", ")}</Text>
+              <Text style={styles.conversationText}>Last Message: {item.lastMessage}</Text>
+            </View>
+          )}
         />
       </View>
     )
@@ -80,25 +125,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "white", // White text for better contrast
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  conversationItem: {
+    padding: 10,
+    backgroundColor: "#444",
+    marginVertical: 5,
+    borderRadius: 5,
   },
-  modalView: {
-    width: "80%", // Make the modal bigger
-    backgroundColor: "#444444", // Slightly lighter dark grey for modal
-    borderRadius: 20,
-    padding: 35,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+  conversationText: {
+    color: "white",
   },
 });
 

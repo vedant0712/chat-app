@@ -8,7 +8,14 @@ import {
   Modal,
   ToastAndroid,
 } from "react-native";
-import { doc, updateDoc, arrayRemove, arrayUnion } from "firebase/firestore";
+import {
+  doc,
+  updateDoc,
+  setDoc,
+  serverTimestamp,
+  arrayRemove,
+  arrayUnion,
+} from "firebase/firestore";
 import { db } from "../config/firebase";
 import { useAuthStore } from "../context/AuthStore";
 
@@ -29,16 +36,27 @@ const FriendRequestsModal: React.FC<FriendRequestsModalProps> = ({
     try {
       const userRef = doc(db, "users", user.id);
       const requesterRef = doc(db, "users", requesterId);
+      const conversationId = [user.id, requesterId].sort().join("_");
 
       // Update the current user's document
       await updateDoc(userRef, {
         friendRequests: arrayRemove(requesterId),
         friendList: arrayUnion(requesterId),
+        conversations: arrayUnion(conversationId),
       });
 
       // Update the requester's document
       await updateDoc(requesterRef, {
         friendList: arrayUnion(user.id),
+        conversations: arrayUnion(conversationId),
+      });
+
+      // Create a new conversation document
+      const conversationRef = doc(db, "conversations", conversationId);
+      await setDoc(conversationRef, {
+        participants: [user.id, requesterId],
+        lastMessage: "",
+        lastUpdated: serverTimestamp(),
       });
 
       // Update the local state
@@ -48,6 +66,7 @@ const FriendRequestsModal: React.FC<FriendRequestsModalProps> = ({
           (id: string) => id !== requesterId
         ),
         friendList: [...user.friendList, requesterId],
+        conversations: [...user.conversations, conversationId],
       });
 
       ToastAndroid.showWithGravityAndOffset(
@@ -87,7 +106,7 @@ const FriendRequestsModal: React.FC<FriendRequestsModalProps> = ({
   };
 
   return (
-    <Modal
+    friendRequests && <Modal
       animationType="slide"
       transparent={true}
       visible={visible}
