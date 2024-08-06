@@ -13,6 +13,8 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@expo-google-fonts/chango": "^0.2.3",
+    "@expo-google-fonts/poppins": "^0.2.3",
     "@expo/vector-icons": "^14.0.0",
     "@react-native-google-signin/google-signin": "^11.0.1",
     "@react-navigation/native": "^6.0.2",
@@ -34,7 +36,8 @@
     "react-native-screens": "~3.29.0",
     "react-native-toast-message": "^2.2.0",
     "react-native-web": "~0.19.6",
-    "zustand": "^4.5.2"
+    "zustand": "^4.5.2",
+    "expo-linear-gradient": "~12.7.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

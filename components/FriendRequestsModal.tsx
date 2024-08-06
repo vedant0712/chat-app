@@ -34,6 +34,7 @@ const FriendRequestsModal: React.FC<FriendRequestsModalProps> = ({
 
   const handleAccept = async (requesterId: string) => {
     try {
+      onClose();
       const userRef = doc(db, "users", user.id);
       const requesterRef = doc(db, "users", requesterId);
       const conversationId = [user.id, requesterId].sort().join("_");
@@ -83,6 +84,7 @@ const FriendRequestsModal: React.FC<FriendRequestsModalProps> = ({
 
   const handleReject = async (requesterId: string) => {
     try {
+      onClose();
       const userRef = doc(db, "users", user.id);
       await updateDoc(userRef, {
         friendRequests: arrayRemove(requesterId),
@@ -106,34 +108,36 @@ const FriendRequestsModal: React.FC<FriendRequestsModalProps> = ({
   };
 
   return (
-    friendRequests && <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalView}>
-          <Text>Friend Requests</Text>
-          {friendRequests.map((requesterId) => (
-            <View key={requesterId} style={styles.requestContainer}>
-              <Text>{requesterId}</Text>
-              <Button
-                title="Accept"
-                onPress={() => handleAccept(requesterId)}
-              />
-              <Button
-                title="Reject"
-                onPress={() => handleReject(requesterId)}
-              />
-            </View>
-          ))}
-          <TouchableOpacity style={styles.button} onPress={onClose}>
-            <Text style={styles.buttonText}>Close</Text>
-          </TouchableOpacity>
+    friendRequests && (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={visible}
+        onRequestClose={onClose}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <Text>Friend Requests</Text>
+            {friendRequests.map((requesterId) => (
+              <View key={requesterId} style={styles.requestContainer}>
+                <Text>{requesterId}</Text>
+                <Button
+                  title="Accept"
+                  onPress={() => handleAccept(requesterId)}
+                />
+                <Button
+                  title="Reject"
+                  onPress={() => handleReject(requesterId)}
+                />
+              </View>
+            ))}
+            <TouchableOpacity style={styles.button} onPress={onClose}>
+              <Text style={styles.buttonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
+    )
   );
 };
 
