@@ -1,4 +1,13 @@
-import { Button, StyleSheet, Text, View, ImageBackground, Image, ActivityIndicator, Animated } from "react-native";
+import {
+  Button,
+  StyleSheet,
+  Text,
+  View,
+  ImageBackground,
+  Image,
+  ActivityIndicator,
+  Animated,
+} from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useState, useRef } from "react";
@@ -9,10 +18,10 @@ import {
 import { useAuthStore } from "../context/AuthStore";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
-import { useFonts, Poppins_700Bold } from '@expo-google-fonts/poppins';
-import * as SplashScreen from 'expo-splash-screen';
+import { useFonts, Poppins_700Bold } from "@expo-google-fonts/poppins";
+import * as SplashScreen from "expo-splash-screen";
+import { WEB_CLIENT_ID } from "@env";
 
-// Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 const index = () => {
@@ -56,8 +65,7 @@ const index = () => {
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId:
-        "273478545786-931rvm9f6guf3iufrh8fd7bo3ve948iv.apps.googleusercontent.com",
+      webClientId: WEB_CLIENT_ID,
     });
   }, [user]);
 
@@ -96,7 +104,7 @@ const index = () => {
   if (!fontsLoaded || isSigningIn) {
     return (
       <ImageBackground
-        source={require('../assets/images/Purple Gradient iPhone Wallpaper HD.jpg')}
+        source={require("../assets/images/Purple Gradient iPhone Wallpaper HD.jpg")}
         style={styles.container}
         onLayout={onLayoutRootView}
       >
@@ -107,14 +115,14 @@ const index = () => {
 
   return (
     <ImageBackground
-      source={require('../assets/images/Purple Gradient iPhone Wallpaper HD.jpg')}
+      source={require("../assets/images/Purple Gradient iPhone Wallpaper HD.jpg")}
       style={styles.container}
       onLayout={onLayoutRootView}
     >
       <Text>{error ? error.toString() : ""}</Text>
       <View style={styles.content}>
         <Image
-          source={require('../assets/images/chat-conversation-svgrepo-com.png')}
+          source={require("../assets/images/chat-conversation-svgrepo-com.png")}
           style={styles.logo}
         />
         <View style={styles.appNameContainer}>
@@ -162,16 +170,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   appName: {
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: "Poppins_700Bold",
     fontSize: 24,
-    color: 'white',
-    textAlign: 'center',
+    color: "white",
+    textAlign: "center",
   },
   welcomeText: {
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: "Poppins_700Bold",
     fontSize: 24,
-    color: 'white',
-    textAlign: 'center',
+    color: "white",
+    textAlign: "center",
   },
 });
 

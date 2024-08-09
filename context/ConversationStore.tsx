@@ -19,7 +19,7 @@ interface ConversationState {
 export const useConversationStore = create<ConversationState>()((set) => ({
   conversations: [],
   setConversations: (conversations) => set({ conversations }),
-  fetchConversations: async (userId) => {
+  fetchConversations: async (userId: string): Promise<void> => {
     const conversationsRef = collection(db, "conversations");
     const conversationsSnapshot = await getDocs(conversationsRef);
     const conversations = conversationsSnapshot.docs

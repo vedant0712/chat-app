@@ -12,7 +12,8 @@ interface MessageState {
   messages: Record<string, Message[]>;
   sendMessage: (conversationId: string, senderId: string, content: string) => void;
   loadMessages: (conversationId: string) => void;
-  cleanup: (conversationId: string) => void; // Add cleanup to the interface
+  cleanup: (conversationId: string) => void;
+  clearMessages: () => void; 
 }
 
 export const useMessageStore = create<MessageState>((set) => {
@@ -30,18 +31,16 @@ export const useMessageStore = create<MessageState>((set) => {
       const messagesRef = collection(db, "messages", conversationId, "messages");
       await addDoc(messagesRef, message);
 
-      // Update the lastMessage field in the conversation document
       const conversationRef = doc(db, "conversations", conversationId);
       await updateDoc(conversationRef, {
         lastMessage: content,
         lastUpdated: serverTimestamp(),
       });
 
-      console.log(`Message sent: ${content}`); // Log message sent
+      console.log(`Message sent: ${content}`); 
     },
-    loadMessages: (conversationId: string) => { // Explicitly type conversationId
+    loadMessages: (conversationId: string) => { 
       if (listeners[conversationId]) {
-        // Listener already exists for this conversation, no need to set up again
         return;
       }
 
@@ -56,18 +55,20 @@ export const useMessageStore = create<MessageState>((set) => {
             [conversationId]: messages,
           },
         }));
-        console.log(`Messages loaded for conversation ${conversationId}:`, messages); // Log messages loaded
+        console.log(`Messages loaded for conversation ${conversationId}:`, messages); 
       });
 
-      // Store the unsubscribe function to clean up later if needed
       listeners[conversationId] = unsubscribe;
     },
-    // Add a cleanup function to remove listeners when necessary
-    cleanup: (conversationId: string) => { // Explicitly type conversationId
+  
+    cleanup: (conversationId: string) => { 
       if (listeners[conversationId]) {
         listeners[conversationId]();
         delete listeners[conversationId];
       }
+    },
+    clearMessages: () => {
+      set({ messages: {} });
     },
   };
 });

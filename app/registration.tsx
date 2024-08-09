@@ -15,7 +15,6 @@ import { doc, setDoc } from "firebase/firestore";
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts, Poppins_700Bold } from '@expo-google-fonts/poppins';
 
-// Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 const registration = () => {
@@ -23,6 +22,7 @@ const registration = () => {
   const [name, setName] = useState(user.name);
   const [profileImg, setProfileImg] = useState<string | null>(null);
   const [appIsReady, setAppIsReady] = useState(false);
+  const [loadingRegistration, setLoadingRegistration] = useState(false); 
   let [fontsLoaded] = useFonts({
     Poppins_700Bold,
   });
@@ -60,6 +60,7 @@ const registration = () => {
 
   const handleRegistration = async () => {
     try {
+      setLoadingRegistration(true); 
       let downloadURL = null;
       if (profileImg) {
         const response = await fetch(profileImg);
@@ -86,6 +87,8 @@ const registration = () => {
       if (e instanceof Error) {
         setError(e);
       }
+    } finally {
+      setLoadingRegistration(false); 
     }
   };
 
@@ -137,7 +140,11 @@ const registration = () => {
             <Text style={styles.buttonText}>Pick a profile picture</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={handleRegistration}>
-            <Text style={styles.buttonText}>Register!</Text>
+            {loadingRegistration ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <Text style={styles.buttonText}>Register!</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ImageBackground>
@@ -150,7 +157,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "flex-start",
-    paddingTop: 50, // Adjust this value as needed
+    paddingTop: 50, 
   },
   content: {
     alignItems: "center",
@@ -177,11 +184,11 @@ const styles = StyleSheet.create({
     borderColor: "white",
     borderWidth: 1,
     padding: 9,
-    paddingLeft: 20, // Add padding to the left
+    paddingLeft: 20, 
     borderRadius: 20,
     color: "white",
     fontFamily: 'Poppins_700Bold',
-    textAlignVertical: 'center', // Ensure text is vertically centered
+    textAlignVertical: 'center', 
   },
   imageContainer: {
     width: "100%",

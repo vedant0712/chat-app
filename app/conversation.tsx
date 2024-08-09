@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { View, Text, TextInput, Button, FlatList, TouchableOpacity, ImageBackground, ActivityIndicator, Image, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ImageBackground, ActivityIndicator, Image, StyleSheet, FlatList } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useAuthStore } from "../context/AuthStore";
 import { useMessageStore } from "../context/MessageStore";
@@ -7,7 +7,6 @@ import { useNavigation } from "@react-navigation/native";
 import { useFonts, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import * as SplashScreen from 'expo-splash-screen';
 
-// Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 const Conversation = () => {
@@ -88,21 +87,37 @@ const Conversation = () => {
               styles.messageContainer,
               item.senderId === user.id ? styles.sentMessage : styles.receivedMessage
             ]}>
-              <Text style={item.senderId === user.id ? styles.senderText : styles.receiverText}>
-                {item.content}
-              </Text>
+              <View style={styles.messageContent}>
+                <Text style={item.senderId === user.id ? styles.senderText : styles.receiverText}>
+                  {item.content}
+                </Text>
+                {item.timestamp && item.timestamp.seconds ? (
+                  <Text style={[
+                    styles.timestamp,
+                    item.senderId === user.id ? styles.senderTimestamp : styles.receiverTimestamp
+                  ]}>
+                    {new Date(item.timestamp.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                ) : (
+                  <Text style={styles.timestamp}></Text>
+                )}
+              </View>
             </View>
           )}
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
         />
-        <TextInput
-          style={styles.input}
-          value={newMessage}
-          onChangeText={setNewMessage}
-          placeholder="Type a message"
-          placeholderTextColor="#ccc"
-        />
-        <Button title="Send" onPress={handleSend} />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={newMessage}
+            onChangeText={setNewMessage}
+            placeholder="Type a message"
+            placeholderTextColor="#ccc"
+          />
+          <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+            <Image source={require('../assets/images/send-alt-1-svgrepo-com.png')} style={styles.sendIcon} />
+          </TouchableOpacity>
+        </View>
       </ImageBackground>
     </View>
   );
@@ -158,35 +173,68 @@ const styles = StyleSheet.create({
   },
   sentMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)', // White less translucent background
-    borderRadius: 10, // Adjusted for less rounded corners
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', 
+    borderRadius: 10, 
     marginBottom: 10,
     padding: 10,
     maxWidth: '80%',
   },
   receivedMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(128, 128, 128, 0.5)', // Grey less translucent background
-    borderRadius: 10, // Adjusted for less rounded corners
+    backgroundColor: 'rgba(128, 128, 128, 0.5)',
+    borderRadius: 10, 
     marginBottom: 10,
     padding: 10,
     maxWidth: '80%',
   },
+  messageContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   senderText: {
     fontFamily: 'Poppins_700Bold',
-    color: 'black', // Black text for sent messages
+    color: 'black', 
   },
   receiverText: {
     fontFamily: 'Poppins_700Bold',
-    color: 'white', // White text for received messages
+    color: 'white', 
+  },
+  timestamp: {
+    fontSize: 10,
+    marginLeft: 10,
+    fontFamily: 'Poppins_700Bold',
+  },
+  senderTimestamp: {
+    color: 'black', 
+  },
+  receiverTimestamp: {
+    color: 'lightgray', 
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   input: {
+    flex: 1,
     borderWidth: 1,
     borderColor: "#ccc",
     padding: 10,
-    marginBottom: 10,
+    borderRadius: 20,
     fontFamily: 'Poppins_700Bold',
     color: 'white',
+    marginRight: 10,
+  },
+  sendButton: {
+    padding: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    borderRadius: 20,
+  },
+  sendIcon: {
+    width: 24,
+    height: 24,
+    tintColor: 'white',
   },
 });
 
